@@ -1,6 +1,6 @@
 # twitterwebhook
 
-created due to the limited amount of requests you can make with twitter API. the webhook posts the newest tweets and posts it to discord.
+created due to the limited amount of requests you can make with twitter API. The webhook posts the newest tweets and posts it to discord.
 
 Since you are making alot of requests to get the most recent tweets. There is a built in proxy rotation to prevent your ip from being blacklisted.
 
