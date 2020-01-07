@@ -17,7 +17,18 @@ from dbsetup import db_check as dbcheck
 import proxyscraper as scrape
 import webhook
 
+##conn = sqlite3.connect("twitterDB.db")
+try:  ## try connecting to mysql first
+    conn = mysql.connect(
+        host=config.host,
+        user=config.user,
+        passwd=config.passwd,
+        port=config.port
+    )
+except: ## if no successful MySQl connection use SQLite3
+    conn = sqlite3.connect("twitterDB.db")
 
+c = conn.cursor()
 dbcheck() ## dbcheck will make sure tables and database is present / created by looking at the handles in config.twitter_url
 urls = config.twitter_url
 status = 0 ## status is here to check if we are in first run or not. Don't want to puke every tweet out there on initilization
@@ -27,19 +38,8 @@ status = 0 ## status is here to check if we are in first run or not. Don't want 
 
 def db_update(handle, url1, tweet):
     global status
-    ##conn = sqlite3.connect("twitterDB.db")
-    try:  ## try connecting to mysql first
-        conn = mysql.connect(
-            host=config.host,
-            user=config.user,
-            passwd=config.passwd,
-            port=config.port
-        )
-        print(conn)
-    except: ## if no successful MySQl connection use SQLite3
-        conn = sqlite3.connect("twitterDB.db")
-
-    c = conn.cursor()
+    
+    print (conn)
     db_type = str(type(conn)).lower()
     if "mysql" in db_type:
         c.execute("use twitterDB")
