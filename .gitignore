@@ -1,0 +1,12 @@
+*.db
+config.py
+.idea/
+__pycache__/
+*.json
+*.csv
+
+
+.vscode/
+Pipfile*
+
+
