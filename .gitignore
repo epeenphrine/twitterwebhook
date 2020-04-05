@@ -3,6 +3,7 @@
 __pycache__/
 *.json
 *.csv
+/twitterwebhook
 
 
 .vscode/

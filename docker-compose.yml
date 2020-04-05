@@ -1,0 +1,9 @@
+version: "3"
+    services:
+        tweethook:
+            build:
+                context: .
+                dockerfile: tweethook.dockerfile
+            volumes:
+                - ./:tweethook
+            restart: on-failure
