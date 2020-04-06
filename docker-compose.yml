@@ -5,6 +5,7 @@ services:
         build:
             context: .
             dockerfile: tweethook.Dockerfile
+        ## sync host directory with image directory 
         volumes:
             - ./:/tweethook
         restart: on-failure
