@@ -160,7 +160,7 @@ async def twitter_scrape(url):
     print("sleeping for 30s")
     await asyncio.sleep(30)
 
-def parallel_run():
+def async_run():
     global status
     while True:
         tasks = []
@@ -171,4 +171,4 @@ def parallel_run():
         status = 1
 
 
-parallel_run()
+async_run()
