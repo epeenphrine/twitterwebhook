@@ -3,9 +3,9 @@
 ## note only handles should be present at twitter.com
 ## example : https://www.quora.com/What-is-meant-by-a-Twitter-handle
 
-twitter_url = [""] ## EXAMPLE : ["https://twitter.com/realDonaldTrump", "https://twitter.com/CNBC", "https://twitter.com/SirJohnSteele", "https://twitter.com/CNBCnow","https://twitter.com/business"]
+twitter_url = ["https://twitter.com/realDonaldTrump"] ## EXAMPLE : ["https://twitter.com/realDonaldTrump", "https://twitter.com/CNBC", "https://twitter.com/SirJohnSteele", "https://twitter.com/CNBCnow","https://twitter.com/business"]
 discord_webhook_url = ''
-
+developemnt = True
 
 ## dbsetup stuff / db stuff
 ## mysql

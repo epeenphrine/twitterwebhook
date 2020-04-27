@@ -8,82 +8,64 @@ import re
 import sqlite3
 import os
 import datetime
+from datetime import date
 import time
-import mysql.connector as mysql
 
 ## non standard libraries
 import config
-from dbsetup import db_check as dbcheck
 import proxyscraper as scrape
-import webhook
+import requests
+
 
 ##conn = sqlite3.connect("twitterDB.db")
-try:  ## try connecting to mysql first
-    conn = mysql.connect(
-        host=config.host,
-        user=config.user,
-        passwd=config.passwd,
-        port=config.port
-    )
-except: ## if no successful MySQl connection use SQLite3
-    conn = sqlite3.connect("twitterDB.db")
 
-c = conn.cursor()
-dbcheck() ## dbcheck will make sure tables and database is present / created by looking at the handles in config.twitter_url
-urls = config.twitter_url
-status = 0 ## status is here to check if we are in first run or not. Don't want to puke every tweet out there on initilization
-"""starts at  0 to load the initial database. When status is 1 checks for new tweet after initial to send discord webhook"""
+url = "https://twitter.com/realDonaldTrump"
+timer = 60
+days = {
 
-##url = "https://google.com"
+}
 
-def db_update(handle, url1, tweet):
-    global status
-    
-    print (conn)
-    db_type = str(type(conn)).lower()
-    if "mysql" in db_type:
-        c.execute("use twitterDB")
-        entry_date = str(datetime.datetime.now())
-        entry = (url1, tweet, entry_date)
-        c.execute(f"SELECT * FROM {handle} where url = '{url1}'")
-        query = c.fetchall()
-        print(f"this is {query}")
-        if not query and status == 0:
-            print(f"mysql entry : {entry}")
-            c.execute(f"INSERT INTO {handle} VALUES {entry}")
-            conn.commit()
-        elif not query and status == 1:
-            print(f"mysql entry : {entry}")
-            c.execute(f"INSERT INTO {handle} VALUES {entry}")
-            conn.commit()
-            webhook.message(url1)
-
-        else:
-            print("table and tweet exists skipping")
-    elif "sqlite" in db_type:
-        ## entry to database sqlite
-        entry_date = str(datetime.datetime.now())
-        entry = (url1, tweet, entry_date)
-        query = c.execute(f"SELECT url FROM {handle} WHERE url = '{url1}'").fetchall()
-        if not query and status == 0:
-            print(f"sqlite entry : {entry}")
-            c.execute(f"INSERT INTO {handle} VALUES {entry}")
-            conn.commit()
-        elif not query and status == 1:
-            print(f"sqlite entry : {entry}")
-            c.execute(f"INSERT INTO {handle} VALUES {entry}")
-            conn.commit()
-            webhook.message(url1)
-        else:
-            print("table and tweet exists skipping ....")
-
+for i in range(1,32):
+    if i < 10: 
+        days[str(i)] = f"0{i}"
     else:
-        print("can't connect to SQLite3 or MySQL")
+        days[str(i)] = f"{i}"
+
+months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+]
+
+month_key = {
+    'Jan' : '01',
+    'Feb' : '02',
+    'Mar' : '03',
+    'Apr' : '04',
+    'May' : '05',
+    'Jun' : '06',
+    'Jul' : '07',
+    'Aug' : '08',
+    'Sep' : '09',
+    'Oct' : '10',
+    'Nov' : '11',
+    'Dec' : '12'
+}
 
 
+def  twitter_scrape(url):
+    res = requests.get('http://neetcode.com:1337/api/tweet/')
+    data = json.loads(res.content)
 
-async def twitter_scrape(url):
-    global status
     if os.path.exists("proxydictlist.json"):
         with open("proxydictlist.json") as f:
             proxies_list = json.load(f)
@@ -122,53 +104,76 @@ async def twitter_scrape(url):
                 proxies_list.remove(pick)
                 print(f"{pick} removed")
                 print(len(proxies_list))
-                print(Exception)
 
         with open("proxydictlist.json", "w") as f:
             json.dump(proxies_list, f)
         print("\n\n\n\n\n\n\n\n")
         search = soup.findAll("div", {"data-tweet-id": re.compile(r".*")}) ## in div find attribute with data-tweet-id with any tag
-        ##print(search) ## search in data type list
+
+        tweet_ids = [
+
+        ]
+    
         for item in search: ## iterate through search which is in a list
+        
             strip = item.get_text(strip = True)
             print("tweet:")
             print(strip)
 
             tweet = strip.replace("'","`")
-            tag_get = item.get('data-tweet-id') ## get tags in the data-tweet-id attribute
-            print(f"\ntag id = {tag_get}")
+            tweet_id = item.get('data-tweet-id') ## get tags in the data-tweet-id attribute
+            print(f"\ntag id = {tweet_id}")
 
             split_ = url.split("/")
             split_.remove("")
             handle = split_[2]
             print(f"handle = {handle}")
 
-            url1 = f"https://twitter.com/{handle}/status/{tag_get}"
+            url1 = f"https://twitter.com/{handle}/status/{tweet_id}"
             print(f"constructed new url : {url1}")
-            print("*******************")
-            db_update(handle, url1, tweet)
-            print(f"status ........................................... {status}")
-        print("\nscraping success !!")
-        ##return db_update(url1)
+            print("******************* \n")
+
+            for month in months:
+                tweet_when = re.findall(f'{month} \d\d|{month} \d', tweet)
+                if tweet_when:
+                    break
+
+            if tweet_when:
+                when_split = tweet_when[0].split()
+                day = days[when_split[1]]
+                month = month_key[when_split[0]]
+                year = date.today().year
+                constructed_date = f"{year}-{month}-{day}"
+                print(constructed_date)
+
+            if not tweet_when:
+                print(date.today())
+            
+            ## post request. Preventing repeated entries
+            if not any(dat['tweet_id'] == tweet_id for dat in data):
+
+                payload = {
+                
+                    }
+                payload['handle'] = handle
+                payload['tweet'] = tweet
+                if tweet_when: 
+                    payload['date'] = constructed_date
+                else:
+                    payload['date'] = str(date.today())
+                payload['url'] = url1 
+                payload['tweet_id'] = tweet_id
+                data.append(payload)
+                post = requests.post('http://neetcode.com:1337/api/tweet/', data=payload)
+                print(f'posted : {post}')
+
+            else:
+                print(f'{tweet_id} exists skipping \n')
+            
+        print('sleeping for 60s')
+        time.sleep(60)
+        return twitter_scrape(url)
     else:
-        print("\n\n\n\n\n")
-        print("getting new proxies")
         scrape.proxyscrape()
-        print("\n")
-        print("got new proxies ........................... ")
-
-    print("sleeping for 30s")
-    await asyncio.sleep(30)
-
-def async_run():
-    global status
-    while True:
-        tasks = []
-        loop = asyncio.new_event_loop()
-        for url in urls:
-            tasks.append(loop.create_task(twitter_scrape(url)))
-        loop.run_until_complete(asyncio.wait(tasks))
-        status = 1
-
-
-async_run()
+        return twitter_scrape(url)
+twitter_scrape(url)

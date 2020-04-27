@@ -3,10 +3,13 @@
 __pycache__/
 *.json
 *.csv
-/twitterwebhook
 
+twitterwebhook/
 
 .vscode/
 Pipfile*
 
+testapi.py
+test.py
 
+secrets.py
