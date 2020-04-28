@@ -47,6 +47,7 @@ def proxyscrape():
                 sauce = urllib.request.urlopen(req, timeout=5).read()
                 soup = bs.BeautifulSoup(sauce, 'lxml')
                 print(soup)
+                ## break when success in getting a soup object
                 break
             except:
                 ## proxies that do not work are removed from the list
