@@ -40,7 +40,7 @@ def  twitter_scrape():
     if not max_position:
         res = requests.get(secrets.neetcode_api)
         data = json.loads(res.content)
-      
+        url_base = f"https://twitter.com/i/profiles/show/{handle}/timeline/tweets?include_available_features=1&include_entities=1&max_position=991994433750142976&reset_error_state=false"
         soup = proxy_rotate(url_base)
         initial_search = soup.find("div", 'tweet')['data-tweet-id'] ## in div find attribute with data-tweet_raw-id with any tag
    
