@@ -7,3 +7,7 @@ tweeted_today = re.findalll(r'')
 tweeted_not_today = re.findall(r'\w\w\w \d\d|\w\w\w \d', text)
 
 print(search)
+
+## remove TweetEmbed Tweet 
+tweet_re = re.findall('.+TweetEmbed Tweet(.+)', tweet_raw)
+tweet_re1 = re.findall('(.+)(?=[0-9]+,[0-9,]+ replies)', tweet_raw)

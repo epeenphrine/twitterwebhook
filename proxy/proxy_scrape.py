@@ -59,7 +59,6 @@ def scrape():
                 req = urllib.request.Request(url, headers={'User-Agent' : f"{headers_pick}"})
                 sauce = urllib.request.urlopen(req, timeout=5).read()
                 soup = bs.BeautifulSoup(sauce, 'lxml')
-                print(soup)
                 ## break when soup object obtained
                 break
             except:

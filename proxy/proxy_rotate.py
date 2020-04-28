@@ -6,6 +6,9 @@ import random
 import urllib
 import bs4 as bs
 import os
+
+from .proxy_scrape import scrape
+
 def proxy_rotate(url):
     
     # json file check
@@ -37,7 +40,6 @@ def proxy_rotate(url):
         'Opera/9.80 (X11; Linux i686; Ubuntu/14.10) Presto/2.12.388 Version/12.16',
         'Mozilla/5.0 (Windows NT 5.2; RW; rv:7.0a1) Gecko/20091211 SeaMonkey/9.23a1pre'
     ]
-
     # check if proxies_list is empty or not
     if proxies_list and (len(proxies_list) >= 50):
         for i in range(0, len(proxies_list)):
@@ -45,7 +47,6 @@ def proxy_rotate(url):
                 #pick random proxy and header
                 proxy_pick = random.choice(proxies_list)
                 headers_pick = random.choice(headers_list)
-
 
                 # configuring urllib for use with proxies
                 proxy_support = urllib.request.ProxyHandler(proxy_pick)
@@ -55,14 +56,19 @@ def proxy_rotate(url):
                 # requests
                 req = urllib.request.Request(
                     url, headers={'User-Agent': f"{headers_pick}"})
-                sauce = urllib.request.urlopen(req, timeout=5).read()
-                json_data = json.loads(sauce)
-                soup = bs.BeautifulSoup(json_data['items_html'], 'lxml')
-                return(soup)
+                res = urllib.request.urlopen(req, timeout=5).read()
+                if res:
+                    try:
+                        json_data = json.loads(res.decode('utf-8'))
+                        soup = bs.BeautifulSoup(json_data['items_html'], 'lxml')
+                        return soup
+                    except:
+                        soup = bs.BeautifulSoup(res, 'lxml')
+                        return soup
             except:
                 # proxies that do not work are removed from the list and json
                 print(f"{proxy_pick} did not work")
-
+                
                 proxies_list.remove(proxy_pick)
                 with open('proxydictlist.json', 'w') as f:
                     json.dump(proxies_list, f)
