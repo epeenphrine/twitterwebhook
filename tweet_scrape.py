@@ -12,6 +12,7 @@ from datetime import date
 import time
 
 ## non pip install libraries
+import secrets
 import config
 from proxy.proxy_rotate import proxy_rotate
 from proxy.proxy_scrape import scrape
@@ -23,12 +24,11 @@ max_position = ''
 handle = 'realDonaldTrump'
 url_base = f"https://twitter.com/{handle}"
 
-days_to_search = 200
+days_to_search = 30
 days_today = datetime.date.today()
 days = datetime.timedelta(days_to_search)
 days_delta = days_today - days
-print(days_delta)
-time.sleep(5)
+
 def  twitter_scrape():
     global max_position
     tweet_datas = [
@@ -40,7 +40,6 @@ def  twitter_scrape():
     if not max_position:
         res = requests.get(secrets.neetcode_api)
         data = json.loads(res.content)
-        url_base = f"https://twitter.com/i/profiles/show/{handle}/timeline/tweets?include_available_features=1&include_entities=1&max_position=991994433750142976&reset_error_state=false"
         soup = proxy_rotate(url_base)
         initial_search = soup.find("div", 'tweet')['data-tweet-id'] ## in div find attribute with data-tweet_raw-id with any tag
    
@@ -51,17 +50,21 @@ def  twitter_scrape():
     search_tweet = soup.findAll('div', 'tweet')
     for item in search_tweet:
         tweet_data = {}
-        tweet_data['tweet_content']= item.find('p', 'tweet-text').get_text(strip=True)
-        tweet_data['tweet_id']= item['data-tweet-id']
+        tweet_data['tweet_handle'] = handle
+        tweet_data['tweet_content'] = item.find('p', 'tweet-text').get_text(strip=True)
+        tweet_data['tweet_id'] = item['data-tweet-id']
         tweet_data['tweet_date'] = datetime.datetime.utcfromtimestamp(int(item.find('span', '_timestamp')['data-time'])).strftime("%Y-%m-%d")
-
+        tweet_data['tweet_url'] = f"{url_base}/status/{tweet_data['tweet_id']}"
+        
+        post = requests.post(secrets.neetcode_api, tweet_data)
+        
         try:
             retweeter = item['data-retweeter']
         except:
             retweeter = None
         tweet_date = datetime.datetime.strptime(tweet_data['tweet_date'], "%Y-%m-%d").date()
         tweet_datas.append(tweet_data)
-        print(tweet_date)
+
         if tweet_date < days_delta and (retweeter != handle): 
             print('scraping done!')
             break
